@@ -83,54 +83,62 @@ export function SettleUp({ people, transfers, currency, onSettle }: SettleProps)
   };
 
   return (
-    <Card
-      title={tr.settleUp}
-      icon={<Wallet className="size-5" />}
-      action={
-        transfers.length > 0 && (
+    // The hero card: this is what people open the app for, so it gets the strongest visual weight.
+    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-5 text-white shadow-xl shadow-emerald-600/25 motion-safe:animate-fade-up dark:shadow-emerald-950/50">
+      <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-white/15 blur-2xl" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-20 -left-10 size-40 rounded-full bg-teal-300/20 blur-2xl" />
+
+      <header className="relative mb-4 flex items-start gap-3">
+        <span className="inline-flex size-10 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/30 backdrop-blur">
+          <Wallet className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg leading-tight font-bold">{tr.settleUp}</h2>
+          {transfers.length > 0 && <p className="text-sm text-emerald-50/80">{tr.paymentsLeft(transfers.length)}</p>}
+        </div>
+        {transfers.length > 0 && (
           <button
             onClick={copy}
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2.5 py-1.5 text-xs font-semibold ring-1 ring-white/25 transition hover:bg-white/25 active:scale-95"
           >
             {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
             {copied ? tr.copied : tr.copy}
           </button>
-        )
-      }
-    >
+        )}
+      </header>
+
       {transfers.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <Sparkles className="size-8 text-emerald-500 motion-safe:animate-celebrate" />
-            <p className="font-medium">{tr.allSettled}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{tr.nobodyOwes}</p>
-          </div>
+        <div className="relative flex flex-col items-center gap-2 py-6 text-center">
+          <Sparkles className="size-10 text-amber-200 motion-safe:animate-celebrate" />
+          <p className="text-lg font-bold">{tr.allSettled}</p>
+          <p className="text-sm text-emerald-50/80">{tr.nobodyOwes}</p>
+        </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="relative space-y-2.5">
           {transfers.map((t) => {
             const from = byId.get(t.from);
             const to = byId.get(t.to);
             return (
               <li
                 key={`${t.from}-${t.to}`}
-                className={`flex items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800 ${
+                className={`flex items-center gap-3 rounded-2xl bg-white p-3 text-slate-900 shadow-lg shadow-emerald-900/15 dark:bg-slate-900 dark:text-slate-100 ${
                   leaving === `${t.from}-${t.to}` ? "pointer-events-none motion-safe:animate-slide-out" : "motion-safe:animate-slide-in"
                 }`}
               >
-                <div className="flex -space-x-2">
+                <div className="flex shrink-0 items-center gap-1">
                   <Avatar person={from} />
+                  <ArrowRight className="size-3.5 text-slate-400" />
                   <Avatar person={to} />
                 </div>
-                <div className="min-w-0 flex-1 text-sm">
-                  <p className="flex flex-wrap items-center gap-1">
-                    <span className="font-semibold">{from?.name}</span>
-                    <ArrowRight className="size-3.5 text-slate-400" />
-                    <span className="font-semibold">{to?.name}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                    <span className="font-semibold text-slate-700 dark:text-slate-200">{from?.name}</span> → {to?.name}
                   </p>
-                  <p className="text-base font-bold text-rose-600 tabular-nums dark:text-rose-400">{formatMoney(t.amountCents, currency)}</p>
+                  <p className="text-lg leading-tight font-bold tabular-nums">{formatMoney(t.amountCents, currency)}</p>
                 </div>
                 <button
                   onClick={() => markPaid(t)}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-600 hover:text-white hover:ring-emerald-600 active:scale-95 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-800 dark:hover:bg-emerald-600 dark:hover:text-white"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-emerald-600/30 transition hover:bg-emerald-500 active:scale-95"
                 >
                   <Check className="size-3.5" /> {tr.markPaid}
                 </button>
@@ -139,6 +147,6 @@ export function SettleUp({ people, transfers, currency, onSettle }: SettleProps)
           })}
         </ul>
       )}
-    </Card>
+    </section>
   );
 }

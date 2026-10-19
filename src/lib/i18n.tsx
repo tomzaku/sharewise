@@ -44,6 +44,7 @@ const en = {
   paidShare: (paid: string, share: string) => `Paid ${paid} · Share ${share}`,
 
   settleUp: "Settle up",
+  paymentsLeft: (n: number) => (n === 1 ? "1 payment settles everyone" : `${n} payments settle everyone`),
   copy: "Copy",
   copied: "Copied",
   allSettled: "All settled up!",
@@ -108,6 +109,7 @@ const vi: Dict = {
   paidShare: (paid, share) => `Đã trả ${paid} · Phần chia ${share}`,
 
   settleUp: "Thanh toán",
+  paymentsLeft: (n) => `${n} lần chuyển là xong`,
   copy: "Sao chép",
   copied: "Đã chép",
   allSettled: "Đã thanh toán xong!",

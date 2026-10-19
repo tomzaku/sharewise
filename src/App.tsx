@@ -123,7 +123,7 @@ export default function App() {
         </header>
 
         {/* Results only appear once there is something to show; until then keep a single, centered column. */}
-        <div className={`grid gap-5 ${hasExpenses ? "lg:grid-cols-[1fr_380px] lg:items-start" : "mx-auto max-w-2xl"}`}>
+        <div className={`grid gap-5 ${hasExpenses ? "lg:grid-cols-[1fr_380px] lg:grid-rows-[auto_1fr] lg:items-start" : "mx-auto max-w-2xl"}`}>
           <div className="space-y-5">
             <People
               people={state.people}
@@ -140,24 +140,27 @@ export default function App() {
                 onCancel={() => setEditing(null)}
               />
             )}
-            {hasExpenses && (
-              <ExpenseList
-                people={state.people}
-                expenses={state.expenses}
-                currency={state.currency}
-                editingId={editing?.id}
-                onEdit={setEditing}
-                onRemove={removeExpense}
-                onClear={clearHistory}
-              />
-            )}
           </div>
 
           {hasExpenses && (
-            <div className="space-y-5 lg:sticky lg:top-6">
-              <SettleUp people={state.people} transfers={transfers} currency={state.currency} onSettle={markPaid} />
-              <Balances people={state.people} balances={balances} currency={state.currency} />
-            </div>
+            <>
+              {/* Mobile order: form → settle up → balances → history. Desktop: right column, spanning both rows. */}
+              <div className="space-y-5 lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+                <SettleUp people={state.people} transfers={transfers} currency={state.currency} onSettle={markPaid} />
+                <Balances people={state.people} balances={balances} currency={state.currency} />
+              </div>
+              <div className="lg:col-start-1 lg:row-start-2">
+                <ExpenseList
+                  people={state.people}
+                  expenses={state.expenses}
+                  currency={state.currency}
+                  editingId={editing?.id}
+                  onEdit={setEditing}
+                  onRemove={removeExpense}
+                  onClear={clearHistory}
+                />
+              </div>
+            </>
           )}
         </div>
       </div>
