@@ -15,6 +15,7 @@ type Props = {
 
 export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Props) {
   const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
   const [paidBy, setPaidBy] = useState(people[0]?.id ?? "");
   const [split, setSplit] = useState<Set<string>>(() => new Set(people.map((p) => p.id)));
   const amountRef = useRef<HTMLInputElement>(null);
@@ -36,6 +37,7 @@ export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Pro
   useEffect(() => {
     if (!editing) return;
     setAmount(String(editing.amountCents / 100));
+    setNote(editing.note ?? "");
     setPaidBy(editing.paidBy);
     setSplit(new Set(editing.splitAmong));
     amountRef.current?.focus();
@@ -60,16 +62,19 @@ export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Pro
       id: editing?.id ?? uid(),
       createdAt: editing?.createdAt ?? Date.now(),
       kind: "expense",
+      note: note.trim() || undefined,
       amountCents: cents,
       paidBy,
       splitAmong: people.filter((p) => split.has(p.id)).map((p) => p.id),
     });
     setAmount("");
+    setNote("");
     amountRef.current?.focus();
   };
 
   const cancel = () => {
     setAmount("");
+    setNote("");
     onCancel();
   };
 
@@ -91,6 +96,15 @@ export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Pro
             className="w-full bg-transparent py-3 text-3xl font-semibold tabular-nums outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600"
           />
         </label>
+
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="What for? (optional)"
+          aria-label="What for"
+          maxLength={60}
+          className="-mt-2 w-full rounded-xl border border-transparent bg-transparent px-1 py-1.5 text-sm outline-none placeholder:text-slate-400 focus:border-slate-200 focus:px-3 focus:transition-all dark:focus:border-slate-700"
+        />
 
         <Field label="Paid by">
           {people.map((p) => (

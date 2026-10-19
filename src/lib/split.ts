@@ -4,6 +4,8 @@ export type Person = { id: string; name: string };
 
 export type Expense = {
   id: string;
+  // Optional short description, e.g. "Dinner".
+  note?: string;
   amountCents: number;
   paidBy: string;
   splitAmong: string[];

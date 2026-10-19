@@ -55,11 +55,11 @@ export function ExpenseList({ people, expenses, currency, editingId, onEdit, onR
                         {payer?.name} <ArrowRight className="size-3.5 text-slate-400" /> {byId.get(e.splitAmong[0])?.name}
                       </>
                     ) : (
-                      <>{payer?.name} paid</>
+                      <>{e.note || `${payer?.name} paid`}</>
                     )}
                   </p>
                   <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                    {isPayment ? "Paid back" : `Split with ${splitLabel}`} · {timeAgo(e.createdAt)}
+                    {isPayment ? "Paid back" : `${e.note ? `${payer?.name} paid · ` : ""}Split with ${splitLabel}`} · {timeAgo(e.createdAt)}
                   </p>
                 </div>
                 <span className={`text-sm font-semibold tabular-nums ${isPayment ? "text-emerald-600 dark:text-emerald-400" : ""}`}>

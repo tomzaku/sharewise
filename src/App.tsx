@@ -30,7 +30,12 @@ export default function App() {
 
   const saveExpense = (expense: Expense) => {
     dispatch({ type: "saveExpense", expense });
-    notify(editing ? "Expense updated" : `${nameOf(expense.paidBy)} paid ${formatMoney(expense.amountCents, state.currency)}`, true);
+    notify(
+      editing
+        ? "Expense updated"
+        : `${nameOf(expense.paidBy)} paid ${formatMoney(expense.amountCents, state.currency)}${expense.note ? ` for ${expense.note}` : ""}`,
+      true,
+    );
     setEditing(null);
   };
 
