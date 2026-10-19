@@ -3,19 +3,19 @@ import { Archive, RotateCcw, Split } from "lucide-react";
 import { computeBalances, settle, type Expense, type Transfer } from "./lib/split";
 import { uid, useStore, type State } from "./lib/store";
 import { formatMoney } from "./lib/format";
-import { LANGS, useI18n } from "./lib/i18n";
+import { useI18n } from "./lib/i18n";
 import { People } from "./components/People";
 import { ExpenseForm } from "./components/ExpenseForm";
 import { ExpenseList } from "./components/ExpenseList";
 import { Balances, SettleUp } from "./components/Results";
-import { CurrencyPicker } from "./components/CurrencyPicker";
+import { Settings } from "./components/Settings";
 import { Sessions } from "./components/Sessions";
 
 type Toast = { id: number; message: string; undo?: State };
 
 export default function App() {
   const [state, dispatch] = useStore();
-  const { t, lang, setLang } = useI18n();
+  const { t } = useI18n();
   const [editing, setEditing] = useState<Expense | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [showSessions, setShowSessions] = useState(false);
@@ -102,21 +102,7 @@ export default function App() {
             <p className="hidden text-sm text-slate-500 sm:block dark:text-slate-400">{t.tagline}</p>
           </div>
           <div className="ml-auto flex items-center gap-1.5">
-            <div role="group" aria-label={t.language} className="flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900">
-              {LANGS.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  aria-pressed={lang === l}
-                  className={`rounded-md px-2 py-1 text-xs font-semibold uppercase transition ${
-                    lang === l ? "bg-emerald-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-            <CurrencyPicker value={state.currency} onChange={(currency) => dispatch({ type: "setCurrency", currency })} />
+            <Settings currency={state.currency} onCurrencyChange={(currency) => dispatch({ type: "setCurrency", currency })} />
             {/* Sessions stay out of the way: these only appear once they are useful. */}
             {state.sessions.length > 0 && (
               <button
