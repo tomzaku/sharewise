@@ -7,7 +7,13 @@ const en = {
   tagline: "Split bills, settle fast.",
   currency: "Currency",
   language: "Language",
-  startOver: "Start over",
+  newSession: "Save & start new session",
+  pastSessions: "Past sessions",
+  back: "Back",
+  close: "Close",
+  deleteSession: "Delete session",
+  expensesTitle: "Expenses",
+  peopleCount: (n: number) => (n === 1 ? "1 person" : `${n} people`),
   undo: "Undo",
 
   people: "People",
@@ -57,7 +63,8 @@ const en = {
   toastHistoryCleared: "History cleared",
   toastRemoved: (name: string) => `Removed ${name}`,
   toastPaidBack: (from: string, to: string) => `${from} paid back ${to}`,
-  toastStartedOver: "Started over",
+  toastSessionSaved: "Session saved",
+  toastSessionDeleted: "Session deleted",
 
   names: [
     "Panda", "Tiger", "Otter", "Koala", "Fox", "Owl", "Penguin", "Dolphin", "Bunny", "Bear",
@@ -72,7 +79,13 @@ const vi: Dict = {
   tagline: "Chia hóa đơn, thanh toán nhanh.",
   currency: "Tiền tệ",
   language: "Ngôn ngữ",
-  startOver: "Làm lại từ đầu",
+  newSession: "Lưu và bắt đầu đợt mới",
+  pastSessions: "Các đợt trước",
+  back: "Quay lại",
+  close: "Đóng",
+  deleteSession: "Xóa đợt này",
+  expensesTitle: "Khoản chi",
+  peopleCount: (n) => `${n} người`,
   undo: "Hoàn tác",
 
   people: "Thành viên",
@@ -122,7 +135,8 @@ const vi: Dict = {
   toastHistoryCleared: "Đã xóa lịch sử",
   toastRemoved: (name) => `Đã xóa ${name}`,
   toastPaidBack: (from, to) => `${from} đã trả lại ${to}`,
-  toastStartedOver: "Đã làm lại từ đầu",
+  toastSessionSaved: "Đã lưu đợt chi",
+  toastSessionDeleted: "Đã xóa đợt",
 
   names: [
     "Gấu Trúc", "Hổ", "Rái Cá", "Gấu", "Cáo", "Cú", "Cánh Cụt", "Cá Heo", "Thỏ", "Sư Tử",

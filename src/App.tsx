@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RotateCcw, Split } from "lucide-react";
+import { Archive, RotateCcw, Split } from "lucide-react";
 import { computeBalances, settle, type Expense, type Transfer } from "./lib/split";
 import { uid, useStore, type State } from "./lib/store";
 import { formatMoney } from "./lib/format";
@@ -9,6 +9,7 @@ import { ExpenseForm } from "./components/ExpenseForm";
 import { ExpenseList } from "./components/ExpenseList";
 import { Balances, SettleUp } from "./components/Results";
 import { CurrencyPicker } from "./components/CurrencyPicker";
+import { Sessions } from "./components/Sessions";
 
 type Toast = { id: number; message: string; undo?: State };
 
@@ -17,6 +18,7 @@ export default function App() {
   const { t, lang, setLang } = useI18n();
   const [editing, setEditing] = useState<Expense | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  const [showSessions, setShowSessions] = useState(false);
   const toastTimer = useRef<number>(undefined);
 
   const balances = useMemo(() => computeBalances(state.people, state.expenses), [state.people, state.expenses]);
@@ -69,10 +71,16 @@ export default function App() {
     notify(t.toastPaidBack(nameOf(tr.from), nameOf(tr.to)), true);
   };
 
-  const reset = () => {
+  const newSession = () => {
     setEditing(null);
-    dispatch({ type: "reset" });
-    notify(t.toastStartedOver, true);
+    dispatch({ type: "newSession" });
+    notify(t.toastSessionSaved, true);
+  };
+
+  const deleteSession = (id: string) => {
+    if (state.sessions.length === 1) setShowSessions(false);
+    dispatch({ type: "deleteSession", id });
+    notify(t.toastSessionDeleted, true);
   };
 
   const undo = () => {
@@ -91,7 +99,7 @@ export default function App() {
           </span>
           <div>
             <h1 className="text-xl font-bold tracking-tight">ShareWise</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{t.tagline}</p>
+            <p className="hidden text-sm text-slate-500 sm:block dark:text-slate-400">{t.tagline}</p>
           </div>
           <div className="ml-auto flex items-center gap-1.5">
             <div role="group" aria-label={t.language} className="flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900">
@@ -109,11 +117,25 @@ export default function App() {
               ))}
             </div>
             <CurrencyPicker value={state.currency} onChange={(currency) => dispatch({ type: "setCurrency", currency })} />
-            {(state.people.length > 0 || state.expenses.length > 0) && (
+            {/* Sessions stay out of the way: these only appear once they are useful. */}
+            {state.sessions.length > 0 && (
               <button
-                onClick={reset}
-                title={t.startOver}
-                aria-label={t.startOver}
+                onClick={() => setShowSessions(true)}
+                title={t.pastSessions}
+                aria-label={t.pastSessions}
+                className="relative rounded-lg p-2 text-slate-400 transition hover:bg-slate-200/60 hover:text-slate-700 motion-safe:animate-pop-in dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <Archive className="size-4" />
+                <span className="absolute -top-0.5 -right-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] leading-4 font-bold text-white">
+                  {state.sessions.length}
+                </span>
+              </button>
+            )}
+            {hasExpenses && (
+              <button
+                onClick={newSession}
+                title={t.newSession}
+                aria-label={t.newSession}
                 className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 <RotateCcw className="size-4" />
@@ -164,6 +186,8 @@ export default function App() {
           )}
         </div>
       </div>
+
+      {showSessions && <Sessions sessions={state.sessions} onClose={() => setShowSessions(false)} onDelete={deleteSession} />}
 
       {toast && (
         <div

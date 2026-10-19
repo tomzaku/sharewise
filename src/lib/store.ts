@@ -1,10 +1,20 @@
 import { useEffect, useReducer } from "react";
 import type { Expense, Person } from "./split";
 
+// A finished round of expenses (e.g. "badminton this week"), saved when a new session starts.
+export type Session = {
+  id: string;
+  currency: string;
+  people: Person[];
+  expenses: Expense[];
+  endedAt: number;
+};
+
 export type State = {
   currency: string;
   people: Person[];
   expenses: Expense[];
+  sessions: Session[];
 };
 
 export type Action =
@@ -15,13 +25,13 @@ export type Action =
   | { type: "removeExpense"; id: string }
   | { type: "clearExpenses" }
   | { type: "setCurrency"; currency: string }
-  | { type: "restore"; state: State }
-  | { type: "reset" };
+  | { type: "newSession" }
+  | { type: "deleteSession"; id: string }
+  | { type: "restore"; state: State };
 
 const STORAGE_KEY = "sharewise:v2";
 
-
-const initialState: State = { currency: "VND", people: [], expenses: [] };
+const initialState: State = { currency: "VND", people: [], expenses: [], sessions: [] };
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -67,15 +77,26 @@ function reducer(state: State, action: Action): State {
       return { ...state, currency: action.currency };
     case "restore":
       return action.state;
-    case "reset":
-      return { ...initialState, currency: state.currency };
+    case "newSession":
+      // Archive the current expenses and keep the same people for the next round.
+      if (!state.expenses.length) return state;
+      return {
+        ...state,
+        expenses: [],
+        sessions: [
+          { id: uid(), currency: state.currency, people: state.people, expenses: state.expenses, endedAt: Date.now() },
+          ...state.sessions,
+        ],
+      };
+    case "deleteSession":
+      return { ...state, sessions: state.sessions.filter((s) => s.id !== action.id) };
   }
 }
 
 function load(): State {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
-    if (saved && Array.isArray(saved.people) && Array.isArray(saved.expenses)) return saved;
+    if (saved && Array.isArray(saved.people) && Array.isArray(saved.expenses)) return { ...saved, sessions: saved.sessions ?? [] };
   } catch {}
   return initialState;
 }
