@@ -9,6 +9,7 @@ import { ExpenseForm } from "./components/ExpenseForm";
 import { ExpenseList } from "./components/ExpenseList";
 import { Balances, SettleUp } from "./components/Results";
 import { Settings } from "./components/Settings";
+import { InstallButton } from "./components/InstallButton";
 import { Sessions } from "./components/Sessions";
 
 type Toast = { id: number; message: string; undo?: State };
@@ -102,6 +103,7 @@ export default function App() {
             <p className="hidden text-sm text-slate-500 sm:block dark:text-slate-400">{t.tagline}</p>
           </div>
           <div className="ml-auto flex items-center gap-1.5">
+            <InstallButton />
             <Settings currency={state.currency} onCurrencyChange={(currency) => dispatch({ type: "setCurrency", currency })} />
             {/* Sessions stay out of the way: these only appear once they are useful. */}
             {state.sessions.length > 0 && (
