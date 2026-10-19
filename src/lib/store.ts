@@ -13,6 +13,7 @@ export type Action =
   | { type: "removePerson"; id: string }
   | { type: "saveExpense"; expense: Expense }
   | { type: "removeExpense"; id: string }
+  | { type: "clearExpenses" }
   | { type: "setCurrency"; currency: string }
   | { type: "restore"; state: State }
   | { type: "reset" };
@@ -64,6 +65,8 @@ function reducer(state: State, action: Action): State {
     }
     case "removeExpense":
       return { ...state, expenses: state.expenses.filter((e) => e.id !== action.id) };
+    case "clearExpenses":
+      return { ...state, expenses: [] };
     case "setCurrency":
       return { ...state, currency: action.currency };
     case "restore":

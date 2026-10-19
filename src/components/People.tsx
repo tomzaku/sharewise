@@ -44,7 +44,7 @@ function PersonChip({ person, onRename, onRemove }: { person: Person; onRename: 
   };
 
   return (
-    <li className="group inline-flex h-10 items-center gap-2 rounded-full bg-slate-100 py-1 pr-1.5 pl-1 dark:bg-slate-800">
+    <li className="group inline-flex h-10 motion-safe:animate-pop-in items-center gap-2 rounded-full bg-slate-100 py-1 pr-1.5 pl-1 dark:bg-slate-800">
       <Avatar person={person} />
       {draft === null ? (
         <button onClick={() => setDraft(person.name)} className="text-sm font-medium hover:underline">

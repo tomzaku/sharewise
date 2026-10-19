@@ -38,7 +38,7 @@ export function Card({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+    <section className="motion-safe:animate-fade-up rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
       <header className="mb-4 flex items-center gap-2">
         <span className="text-emerald-600 dark:text-emerald-400">{icon}</span>
         <h2 className="font-semibold">{title}</h2>

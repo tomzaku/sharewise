@@ -45,6 +45,12 @@ export default function App() {
     notify("Deleted", true);
   };
 
+  const clearHistory = () => {
+    setEditing(null);
+    dispatch({ type: "clearExpenses" });
+    notify("History cleared", true);
+  };
+
   const removePerson = (id: string) => {
     if (editing && (editing.paidBy === id || editing.splitAmong.includes(id))) setEditing(null);
     dispatch({ type: "removePerson", id });
@@ -131,6 +137,7 @@ export default function App() {
               editingId={editing?.id}
               onEdit={setEditing}
               onRemove={removeExpense}
+              onClear={clearHistory}
             />
           </div>
 
@@ -151,7 +158,7 @@ export default function App() {
         <div
           key={toast.id}
           role="status"
-          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 animate-[toast-in_200ms_ease-out] items-center gap-4 rounded-full bg-slate-900 py-2.5 pr-2.5 pl-5 text-sm text-white shadow-xl dark:bg-white dark:text-slate-900"
+          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 motion-safe:animate-toast-in items-center gap-4 rounded-full bg-slate-900 py-2.5 pr-2.5 pl-5 text-sm text-white shadow-xl dark:bg-white dark:text-slate-900"
         >
           <span className="whitespace-nowrap">{toast.message}</span>
           {toast.undo && (

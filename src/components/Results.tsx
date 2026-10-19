@@ -62,6 +62,16 @@ type SettleProps = {
 export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }: SettleProps) {
   const byId = new Map(people.map((p) => [p.id, p]));
   const [copied, setCopied] = useState(false);
+  const [leaving, setLeaving] = useState<string | null>(null);
+
+  // Let the row slide out before the payment is recorded and the list recomputes.
+  const markPaid = (t: Transfer) => {
+    setLeaving(`${t.from}-${t.to}`);
+    setTimeout(() => {
+      onSettle(t);
+      setLeaving(null);
+    }, 250);
+  };
 
   const copy = async () => {
     const text = transfers
@@ -93,7 +103,7 @@ export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }:
       {transfers.length === 0 ? (
         hasExpenses ? (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <Sparkles className="size-8 text-emerald-500" />
+            <Sparkles className="size-8 text-emerald-500 motion-safe:animate-celebrate" />
             <p className="font-medium">All settled up!</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Nobody owes anything.</p>
           </div>
@@ -108,7 +118,9 @@ export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }:
             return (
               <li
                 key={`${t.from}-${t.to}`}
-                className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800"
+                className={`flex items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800 ${
+                  leaving === `${t.from}-${t.to}` ? "pointer-events-none motion-safe:animate-slide-out" : "motion-safe:animate-slide-in"
+                }`}
               >
                 <div className="flex -space-x-2">
                   <Avatar person={from} />
@@ -123,10 +135,10 @@ export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }:
                   <p className="text-base font-bold text-rose-600 tabular-nums dark:text-rose-400">{formatMoney(t.amountCents, currency)}</p>
                 </div>
                 <button
-                  onClick={() => onSettle(t)}
-                  className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  onClick={() => markPaid(t)}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-600 hover:text-white hover:ring-emerald-600 active:scale-95 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-800 dark:hover:bg-emerald-600 dark:hover:text-white"
                 >
-                  <Check className="size-3.5" /> Paid
+                  <Check className="size-3.5" /> Mark paid
                 </button>
               </li>
             );

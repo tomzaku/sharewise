@@ -10,9 +10,10 @@ type Props = {
   editingId?: string;
   onEdit: (e: Expense) => void;
   onRemove: (e: Expense) => void;
+  onClear: () => void;
 };
 
-export function ExpenseList({ people, expenses, currency, editingId, onEdit, onRemove }: Props) {
+export function ExpenseList({ people, expenses, currency, editingId, onEdit, onRemove, onClear }: Props) {
   const byId = new Map(people.map((p) => [p.id, p]));
   const sorted = [...expenses].sort((a, b) => b.createdAt - a.createdAt);
   const total = expenses.filter((e) => e.kind === "expense").reduce((s, e) => s + e.amountCents, 0);
@@ -21,7 +22,19 @@ export function ExpenseList({ people, expenses, currency, editingId, onEdit, onR
     <Card
       title="History"
       icon={<History className="size-5" />}
-      action={total > 0 && <span className="text-sm text-slate-500 tabular-nums dark:text-slate-400">Total {formatMoney(total, currency)}</span>}
+      action={
+        sorted.length > 0 && (
+          <div className="flex items-center gap-2">
+            {total > 0 && <span className="text-sm text-slate-500 tabular-nums dark:text-slate-400">Total {formatMoney(total, currency)}</span>}
+            <button
+              onClick={onClear}
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950 dark:hover:text-rose-400"
+            >
+              <Trash2 className="size-3.5" /> Clear
+            </button>
+          </div>
+        )
+      }
     >
       {sorted.length === 0 ? (
         <Empty>No expenses yet.</Empty>
@@ -37,7 +50,7 @@ export function ExpenseList({ people, expenses, currency, editingId, onEdit, onR
             return (
               <li
                 key={e.id}
-                className={`group flex items-center gap-3 rounded-xl px-2 py-2.5 transition hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
+                className={`group flex items-center gap-3 rounded-xl motion-safe:animate-slide-in px-2 py-2.5 transition hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
                   editingId === e.id ? "bg-emerald-50 ring-1 ring-emerald-300 dark:bg-emerald-950/50 dark:ring-emerald-800" : ""
                 }`}
               >
