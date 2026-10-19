@@ -2,22 +2,26 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, Split } from "lucide-react";
 import { computeBalances, settle, type Expense, type Transfer } from "./lib/split";
 import { uid, useStore, type State } from "./lib/store";
-import { CURRENCIES, formatMoney } from "./lib/format";
+import { formatMoney } from "./lib/format";
+import { LANGS, useI18n } from "./lib/i18n";
 import { People } from "./components/People";
 import { ExpenseForm } from "./components/ExpenseForm";
 import { ExpenseList } from "./components/ExpenseList";
 import { Balances, SettleUp } from "./components/Results";
+import { CurrencyPicker } from "./components/CurrencyPicker";
 
 type Toast = { id: number; message: string; undo?: State };
 
 export default function App() {
   const [state, dispatch] = useStore();
+  const { t, lang, setLang } = useI18n();
   const [editing, setEditing] = useState<Expense | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<number>(undefined);
 
   const balances = useMemo(() => computeBalances(state.people, state.expenses), [state.people, state.expenses]);
   const transfers = useMemo(() => settle(balances), [balances]);
+  const hasExpenses = state.expenses.length > 0;
   const nameOf = (id: string) => state.people.find((p) => p.id === id)?.name ?? "?";
 
   const notify = (message: string, undoable = false) => {
@@ -32,8 +36,8 @@ export default function App() {
     dispatch({ type: "saveExpense", expense });
     notify(
       editing
-        ? "Expense updated"
-        : `${nameOf(expense.paidBy)} paid ${formatMoney(expense.amountCents, state.currency)}${expense.note ? ` for ${expense.note}` : ""}`,
+        ? t.toastUpdated
+        : t.toastAdded(nameOf(expense.paidBy), formatMoney(expense.amountCents, state.currency), expense.note),
       true,
     );
     setEditing(null);
@@ -42,33 +46,33 @@ export default function App() {
   const removeExpense = (e: Expense) => {
     if (editing?.id === e.id) setEditing(null);
     dispatch({ type: "removeExpense", id: e.id });
-    notify("Deleted", true);
+    notify(t.toastDeleted, true);
   };
 
   const clearHistory = () => {
     setEditing(null);
     dispatch({ type: "clearExpenses" });
-    notify("History cleared", true);
+    notify(t.toastHistoryCleared, true);
   };
 
   const removePerson = (id: string) => {
     if (editing && (editing.paidBy === id || editing.splitAmong.includes(id))) setEditing(null);
     dispatch({ type: "removePerson", id });
-    notify(`Removed ${nameOf(id)}`, true);
+    notify(t.toastRemoved(nameOf(id)), true);
   };
 
-  const markPaid = (t: Transfer) => {
+  const markPaid = (tr: Transfer) => {
     dispatch({
       type: "saveExpense",
-      expense: { id: uid(), kind: "payment", amountCents: t.amountCents, paidBy: t.from, splitAmong: [t.to], createdAt: Date.now() },
+      expense: { id: uid(), kind: "payment", amountCents: tr.amountCents, paidBy: tr.from, splitAmong: [tr.to], createdAt: Date.now() },
     });
-    notify(`${nameOf(t.from)} paid back ${nameOf(t.to)}`, true);
+    notify(t.toastPaidBack(nameOf(tr.from), nameOf(tr.to)), true);
   };
 
   const reset = () => {
     setEditing(null);
     dispatch({ type: "reset" });
-    notify("Started over", true);
+    notify(t.toastStartedOver, true);
   };
 
   const undo = () => {
@@ -87,24 +91,29 @@ export default function App() {
           </span>
           <div>
             <h1 className="text-xl font-bold tracking-tight">ShareWise</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Split bills, settle fast.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t.tagline}</p>
           </div>
-          <div className="ml-auto flex items-center gap-1">
-            <select
-              value={state.currency}
-              onChange={(e) => dispatch({ type: "setCurrency", currency: e.target.value })}
-              aria-label="Currency"
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900"
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c}>{c}</option>
+          <div className="ml-auto flex items-center gap-1.5">
+            <div role="group" aria-label={t.language} className="flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900">
+              {LANGS.map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  aria-pressed={lang === l}
+                  className={`rounded-md px-2 py-1 text-xs font-semibold uppercase transition ${
+                    lang === l ? "bg-emerald-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {l}
+                </button>
               ))}
-            </select>
+            </div>
+            <CurrencyPicker value={state.currency} onChange={(currency) => dispatch({ type: "setCurrency", currency })} />
             {(state.people.length > 0 || state.expenses.length > 0) && (
               <button
                 onClick={reset}
-                title="Start over"
-                aria-label="Start over"
+                title={t.startOver}
+                aria-label={t.startOver}
                 className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 <RotateCcw className="size-4" />
@@ -113,11 +122,12 @@ export default function App() {
           </div>
         </header>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_380px] lg:items-start">
+        {/* Results only appear once there is something to show; until then keep a single, centered column. */}
+        <div className={`grid gap-5 ${hasExpenses ? "lg:grid-cols-[1fr_380px] lg:items-start" : "mx-auto max-w-2xl"}`}>
           <div className="space-y-5">
             <People
               people={state.people}
-              onAdd={() => dispatch({ type: "addPerson" })}
+              onAdd={() => dispatch({ type: "addPerson", names: t.names, fallback: t.friend })}
               onRename={(id, name) => dispatch({ type: "renamePerson", id, name })}
               onRemove={removePerson}
             />
@@ -130,27 +140,25 @@ export default function App() {
                 onCancel={() => setEditing(null)}
               />
             )}
-            <ExpenseList
-              people={state.people}
-              expenses={state.expenses}
-              currency={state.currency}
-              editingId={editing?.id}
-              onEdit={setEditing}
-              onRemove={removeExpense}
-              onClear={clearHistory}
-            />
+            {hasExpenses && (
+              <ExpenseList
+                people={state.people}
+                expenses={state.expenses}
+                currency={state.currency}
+                editingId={editing?.id}
+                onEdit={setEditing}
+                onRemove={removeExpense}
+                onClear={clearHistory}
+              />
+            )}
           </div>
 
-          <div className="space-y-5 lg:sticky lg:top-6">
-            <SettleUp
-              people={state.people}
-              transfers={transfers}
-              currency={state.currency}
-              hasExpenses={state.expenses.length > 0}
-              onSettle={markPaid}
-            />
-            <Balances people={state.people} balances={balances} currency={state.currency} />
-          </div>
+          {hasExpenses && (
+            <div className="space-y-5 lg:sticky lg:top-6">
+              <SettleUp people={state.people} transfers={transfers} currency={state.currency} onSettle={markPaid} />
+              <Balances people={state.people} balances={balances} currency={state.currency} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -166,7 +174,7 @@ export default function App() {
               onClick={undo}
               className="rounded-full bg-white/15 px-3 py-1 font-semibold transition hover:bg-white/25 dark:bg-slate-900/10 dark:hover:bg-slate-900/20"
             >
-              Undo
+              {t.undo}
             </button>
           )}
         </div>

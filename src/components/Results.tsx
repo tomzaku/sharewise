@@ -2,17 +2,16 @@ import { useState } from "react";
 import { ArrowRight, Check, Copy, Scale, Sparkles, Wallet } from "lucide-react";
 import type { Balance, Person, Transfer } from "../lib/split";
 import { formatMoney } from "../lib/format";
-import { Avatar, Card, Empty } from "./ui";
+import { useI18n } from "../lib/i18n";
+import { Avatar, Card } from "./ui";
 
 export function Balances({ people, balances, currency }: { people: Person[]; balances: Record<string, Balance>; currency: string }) {
+  const { t } = useI18n();
   const max = Math.max(1, ...people.map((p) => Math.abs(balances[p.id]?.net ?? 0)));
 
   return (
-    <Card title="Balances" icon={<Scale className="size-5" />}>
-      {people.length === 0 ? (
-        <Empty>Add people to see balances.</Empty>
-      ) : (
-        <ul className="space-y-3">
+    <Card title={t.balances} icon={<Scale className="size-5" />}>
+      <ul className="space-y-3">
           {people.map((p) => {
             const b = balances[p.id];
             const pct = (Math.abs(b.net) / max) * 50;
@@ -39,14 +38,13 @@ export function Balances({ people, balances, currency }: { people: Person[]; bal
                     />
                   </div>
                   <p className="mt-1 text-xs text-slate-500 tabular-nums dark:text-slate-400">
-                    Paid {formatMoney(b.paid, currency)} · Share {formatMoney(b.owed, currency)}
+                    {t.paidShare(formatMoney(b.paid, currency), formatMoney(b.owed, currency))}
                   </p>
                 </div>
               </li>
             );
           })}
         </ul>
-      )}
     </Card>
   );
 }
@@ -55,11 +53,11 @@ type SettleProps = {
   people: Person[];
   transfers: Transfer[];
   currency: string;
-  hasExpenses: boolean;
   onSettle: (t: Transfer) => void;
 };
 
-export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }: SettleProps) {
+export function SettleUp({ people, transfers, currency, onSettle }: SettleProps) {
+  const { t: tr } = useI18n();
   const byId = new Map(people.map((p) => [p.id, p]));
   const [copied, setCopied] = useState(false);
   const [leaving, setLeaving] = useState<string | null>(null);
@@ -86,7 +84,7 @@ export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }:
 
   return (
     <Card
-      title="Settle up"
+      title={tr.settleUp}
       icon={<Wallet className="size-5" />}
       action={
         transfers.length > 0 && (
@@ -95,21 +93,17 @@ export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }:
             className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? tr.copied : tr.copy}
           </button>
         )
       }
     >
       {transfers.length === 0 ? (
-        hasExpenses ? (
-          <div className="flex flex-col items-center gap-2 py-6 text-center">
+        <div className="flex flex-col items-center gap-2 py-6 text-center">
             <Sparkles className="size-8 text-emerald-500 motion-safe:animate-celebrate" />
-            <p className="font-medium">All settled up!</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Nobody owes anything.</p>
+            <p className="font-medium">{tr.allSettled}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{tr.nobodyOwes}</p>
           </div>
-        ) : (
-          <Empty>Add an expense to see who pays whom.</Empty>
-        )
       ) : (
         <ul className="space-y-2">
           {transfers.map((t) => {
@@ -138,7 +132,7 @@ export function SettleUp({ people, transfers, currency, hasExpenses, onSettle }:
                   onClick={() => markPaid(t)}
                   className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-600 hover:text-white hover:ring-emerald-600 active:scale-95 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-800 dark:hover:bg-emerald-600 dark:hover:text-white"
                 >
-                  <Check className="size-3.5" /> Mark paid
+                  <Check className="size-3.5" /> {tr.markPaid}
                 </button>
               </li>
             );

@@ -1,7 +1,8 @@
 import { ArrowRight, HandCoins, History, Pencil, Trash2 } from "lucide-react";
 import type { Expense, Person } from "../lib/split";
 import { formatMoney, timeAgo } from "../lib/format";
-import { Avatar, Card, Empty } from "./ui";
+import { useI18n } from "../lib/i18n";
+import { Avatar, Card } from "./ui";
 
 type Props = {
   people: Person[];
@@ -14,38 +15,34 @@ type Props = {
 };
 
 export function ExpenseList({ people, expenses, currency, editingId, onEdit, onRemove, onClear }: Props) {
+  const { t, lang } = useI18n();
   const byId = new Map(people.map((p) => [p.id, p]));
   const sorted = [...expenses].sort((a, b) => b.createdAt - a.createdAt);
   const total = expenses.filter((e) => e.kind === "expense").reduce((s, e) => s + e.amountCents, 0);
 
   return (
     <Card
-      title="History"
+      title={t.history}
       icon={<History className="size-5" />}
       action={
-        sorted.length > 0 && (
-          <div className="flex items-center gap-2">
-            {total > 0 && <span className="text-sm text-slate-500 tabular-nums dark:text-slate-400">Total {formatMoney(total, currency)}</span>}
-            <button
-              onClick={onClear}
-              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950 dark:hover:text-rose-400"
-            >
-              <Trash2 className="size-3.5" /> Clear
-            </button>
-          </div>
-        )
+        <div className="flex items-center gap-2">
+          {total > 0 && <span className="text-sm text-slate-500 tabular-nums dark:text-slate-400">{t.total(formatMoney(total, currency))}</span>}
+          <button
+            onClick={onClear}
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950 dark:hover:text-rose-400"
+          >
+            <Trash2 className="size-3.5" /> {t.clearHistory}
+          </button>
+        </div>
       }
     >
-      {sorted.length === 0 ? (
-        <Empty>No expenses yet.</Empty>
-      ) : (
-        <ul className="-mx-2">
+      <ul className="-mx-2">
           {sorted.map((e) => {
             const payer = byId.get(e.paidBy);
             const isPayment = e.kind === "payment";
             const splitLabel =
               e.splitAmong.length === people.length
-                ? "everyone"
+                ? t.everyoneLower
                 : e.splitAmong.map((id) => byId.get(id)?.name ?? "?").join(", ");
             return (
               <li
@@ -68,11 +65,12 @@ export function ExpenseList({ people, expenses, currency, editingId, onEdit, onR
                         {payer?.name} <ArrowRight className="size-3.5 text-slate-400" /> {byId.get(e.splitAmong[0])?.name}
                       </>
                     ) : (
-                      <>{e.note || `${payer?.name} paid`}</>
+                      <>{e.note || t.personPaid(payer?.name ?? "?")}</>
                     )}
                   </p>
                   <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                    {isPayment ? "Paid back" : `${e.note ? `${payer?.name} paid · ` : ""}Split with ${splitLabel}`} · {timeAgo(e.createdAt)}
+                    {isPayment ? t.paidBack : `${e.note ? `${t.personPaid(payer?.name ?? "?")} · ` : ""}${t.splitWithList(splitLabel)}`} ·{" "}
+                    {timeAgo(e.createdAt, lang, t.justNow)}
                   </p>
                 </div>
                 <span className={`text-sm font-semibold tabular-nums ${isPayment ? "text-emerald-600 dark:text-emerald-400" : ""}`}>
@@ -80,11 +78,11 @@ export function ExpenseList({ people, expenses, currency, editingId, onEdit, onR
                 </span>
                 <div className="flex opacity-100 transition sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
                   {!isPayment && (
-                    <IconButton label="Edit" onClick={() => onEdit(e)}>
+                    <IconButton label={t.edit} onClick={() => onEdit(e)}>
                       <Pencil className="size-4" />
                     </IconButton>
                   )}
-                  <IconButton label="Delete" onClick={() => onRemove(e)} danger>
+                  <IconButton label={t.delete} onClick={() => onRemove(e)} danger>
                     <Trash2 className="size-4" />
                   </IconButton>
                 </div>
@@ -92,7 +90,6 @@ export function ExpenseList({ people, expenses, currency, editingId, onEdit, onR
             );
           })}
         </ul>
-      )}
     </Card>
   );
 }

@@ -3,6 +3,7 @@ import { Check, Receipt } from "lucide-react";
 import { parseAmount, type Expense, type Person } from "../lib/split";
 import { uid } from "../lib/store";
 import { currencySymbol, formatMoney } from "../lib/format";
+import { useI18n } from "../lib/i18n";
 import { Avatar, Card } from "./ui";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Props) {
+  const { t } = useI18n();
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [paidBy, setPaidBy] = useState(people[0]?.id ?? "");
@@ -79,10 +81,10 @@ export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Pro
   };
 
   const hint =
-    cents === null ? "Enter an amount" : split.size === 0 ? "Pick who shares this" : `${formatMoney(Math.ceil(cents / split.size), currency)} each`;
+    cents === null ? t.enterAmount : split.size === 0 ? t.pickWho : t.each(formatMoney(Math.ceil(cents / split.size), currency));
 
   return (
-    <Card title={editing ? "Edit expense" : "Add expense"} icon={<Receipt className="size-5" />}>
+    <Card title={editing ? t.editExpense : t.addExpense} icon={<Receipt className="size-5" />}>
       <form onSubmit={submit} className="space-y-5">
         <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 transition focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-500/15 dark:border-slate-700 dark:bg-slate-800/60 dark:focus-within:bg-slate-900">
           <span className="text-xl font-semibold text-slate-400">{currencySymbol(currency)}</span>
@@ -92,7 +94,7 @@ export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Pro
             onChange={(e) => setAmount(e.target.value)}
             inputMode="decimal"
             placeholder="0"
-            aria-label="Amount"
+            aria-label={t.amount}
             className="w-full bg-transparent py-3 text-3xl font-semibold tabular-nums outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600"
           />
         </label>
@@ -100,27 +102,27 @@ export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Pro
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="What for? (optional)"
-          aria-label="What for"
+          placeholder={t.whatFor}
+          aria-label={t.whatFor}
           maxLength={60}
           className="-mt-2 w-full rounded-xl border border-transparent bg-transparent px-1 py-1.5 text-sm outline-none placeholder:text-slate-400 focus:border-slate-200 focus:px-3 focus:transition-all dark:focus:border-slate-700"
         />
 
-        <Field label="Paid by">
+        <Field label={t.paidBy}>
           {people.map((p) => (
             <Pill key={p.id} person={p} selected={paidBy === p.id} onClick={() => setPaidBy(p.id)} />
           ))}
         </Field>
 
         <Field
-          label="Split with"
+          label={t.splitWith}
           action={
             <button
               type="button"
               onClick={() => setSplit(allSelected ? new Set() : new Set(people.map((p) => p.id)))}
               className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400"
             >
-              {allSelected ? "Clear" : "Everyone"}
+              {allSelected ? t.clearSelection : t.everyone}
             </button>
           }
         >
@@ -138,14 +140,14 @@ export function ExpenseForm({ people, currency, editing, onSave, onCancel }: Pro
                 onClick={cancel}
                 className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
               >
-                Cancel
+                {t.cancel}
               </button>
             )}
             <button
               disabled={!valid}
               className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-600/30 transition hover:bg-emerald-500 active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
             >
-              {editing ? "Save" : "Add expense"}
+              {editing ? t.save : t.addExpense}
             </button>
           </div>
         </div>

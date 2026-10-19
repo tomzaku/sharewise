@@ -15,7 +15,8 @@ function colorFor(id: string) {
 const SIZES = { sm: "size-6 text-[10px]", md: "size-8 text-xs", lg: "size-10 text-sm" };
 
 export function Avatar({ person, size = "md" }: { person?: Person; size?: keyof typeof SIZES }) {
-  const initials = person ? person.name.trim().slice(0, 2).toUpperCase() : "?";
+  const words = person?.name.trim().split(/\s+/) ?? [];
+  const initials = !person ? "?" : (words.length > 1 ? words[0][0] + words[1][0] : person.name.trim().slice(0, 2)).toUpperCase();
   return (
     <span
       className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white ring-2 ring-white dark:ring-slate-900 ${SIZES[size]} ${person ? colorFor(person.id) : "bg-slate-400"}`}
@@ -46,13 +47,5 @@ export function Card({
       </header>
       {children}
     </section>
-  );
-}
-
-export function Empty({ children }: { children: ReactNode }) {
-  return (
-    <p className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-      {children}
-    </p>
   );
 }

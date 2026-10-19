@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, Users, X } from "lucide-react";
 import type { Person } from "../lib/split";
+import { useI18n } from "../lib/i18n";
 import { Avatar, Card } from "./ui";
 
 type Props = {
@@ -11,11 +12,12 @@ type Props = {
 };
 
 export function People({ people, onAdd, onRename, onRemove }: Props) {
+  const { t } = useI18n();
   return (
     <Card
-      title="People"
+      title={t.people}
       icon={<Users className="size-5" />}
-      action={people.length > 0 && <span className="text-xs text-slate-400">Tap a name to rename</span>}
+      action={people.length > 0 && <span className="text-xs text-slate-400">{t.tapToRename}</span>}
     >
       <ul className="flex flex-wrap gap-2">
         {people.map((p) => (
@@ -26,7 +28,7 @@ export function People({ people, onAdd, onRename, onRemove }: Props) {
             onClick={onAdd}
             className="inline-flex h-10 items-center gap-1.5 rounded-full border border-dashed border-emerald-400 px-4 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50 active:scale-95 dark:border-emerald-600 dark:text-emerald-400 dark:hover:bg-emerald-950"
           >
-            <Plus className="size-4" /> Add person
+            <Plus className="size-4" /> {t.addPerson}
           </button>
         </li>
       </ul>
@@ -35,6 +37,7 @@ export function People({ people, onAdd, onRename, onRemove }: Props) {
 }
 
 function PersonChip({ person, onRename, onRemove }: { person: Person; onRename: (name: string) => void; onRemove: () => void }) {
+  const { t } = useI18n();
   const [draft, setDraft] = useState<string | null>(null);
 
   const commit = () => {
@@ -66,7 +69,7 @@ function PersonChip({ person, onRename, onRemove }: { person: Person; onRename: 
       )}
       <button
         onClick={onRemove}
-        aria-label={`Remove ${person.name}`}
+        aria-label={t.remove(person.name)}
         className="rounded-full p-1 text-slate-400 transition hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-950"
       >
         <X className="size-3.5" />

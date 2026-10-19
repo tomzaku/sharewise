@@ -8,7 +8,7 @@ export type State = {
 };
 
 export type Action =
-  | { type: "addPerson" }
+  | { type: "addPerson"; names: string[]; fallback: string }
   | { type: "renamePerson"; id: string; name: string }
   | { type: "removePerson"; id: string }
   | { type: "saveExpense"; expense: Expense }
@@ -20,28 +20,24 @@ export type Action =
 
 const STORAGE_KEY = "sharewise:v2";
 
-const NAMES = [
-  "Panda", "Tiger", "Otter", "Koala", "Fox", "Owl", "Penguin", "Dolphin", "Bunny", "Bear",
-  "Lion", "Kitten", "Puppy", "Hippo", "Llama", "Sloth", "Turtle", "Moose", "Zebra", "Falcon",
-];
 
 const initialState: State = { currency: "VND", people: [], expenses: [] };
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
-function randomName(taken: Person[]): string {
+function randomName(taken: Person[], names: string[], fallback: string): string {
   const used = new Set(taken.map((p) => p.name));
-  const free = NAMES.filter((n) => !used.has(n));
+  const free = names.filter((n) => !used.has(n));
   if (free.length) return free[Math.floor(Math.random() * free.length)];
   let i = taken.length + 1;
-  while (used.has(`Friend ${i}`)) i++;
-  return `Friend ${i}`;
+  while (used.has(`${fallback} ${i}`)) i++;
+  return `${fallback} ${i}`;
 }
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "addPerson":
-      return { ...state, people: [...state.people, { id: uid(), name: randomName(state.people) }] };
+      return { ...state, people: [...state.people, { id: uid(), name: randomName(state.people, action.names, action.fallback) }] };
     case "renamePerson":
       return { ...state, people: state.people.map((p) => (p.id === action.id ? { ...p, name: action.name } : p)) };
     case "removePerson":
